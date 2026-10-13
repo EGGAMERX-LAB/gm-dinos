@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#ff7a00">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="GM Dinos">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>GM – Terra dos Dinos</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- Abertura EG Gamer X -->
+<div id="abertura" class="tela on"><img src="logo.webp" alt="EG Gamer X"></div>
+
+<!-- Logo do jogo -->
+<div id="logo" class="tela ceu"><img class="selo" src="logo.webp" alt="EG Gamer X"><div class="gmlogo grande pulsa"></div></div>
+
+<!-- Quem vai jogar? -->
+<div id="quem" class="tela ceu">
+  <img class="selo" src="logo.webp" alt="EG Gamer X">
+  <div class="linha">
+    <button class="rosto" data-jog="gabriel"></button>
+    <button class="rosto" data-jog="matheus"></button>
+  </div>
+</div>
+
+<!-- Menu principal -->
+<div id="menu" class="tela ceu">
+  <div class="nuvem n1">☁️</div><div class="nuvem n2">☁️</div>
+  <div class="passeio">🦕</div><div class="passeio p2">🦖</div>
+  <div class="topo">
+    <button id="bQuem" class="avatar" data-ir="quem"></button>
+    <div id="placar" class="placar">⭐ 0</div>
+    <button class="bola pequena" data-ir="pais">🔒</button>
+  </div>
+  <div class="centro">
+    <div class="gmlogo"></div>
+    <button id="bJogar" class="bolao pulsa">🚗</button>
+    <div class="rotulo">JOGAR</div>
+    <div class="linha">
+      <div class="item"><button class="bola" data-ir="mapa">🗺️</button><span>FASES</span></div>
+      <div class="item"><button class="bola" data-ir="garagem">🔧</button><span>GARAGEM</span></div>
+      <div class="item"><button class="bola" data-ir="album">📒</button><span>ÁLBUM</span></div>
+    </div>
+  </div>
+  <div class="rodape"><img src="logo.webp" alt="EG Gamer X"><span>um jogo<br><b>EG GAMER X</b></span></div>
+</div>
+
+<!-- Mapa das fases -->
+<div id="mapa" class="tela ceu rola">
+  <button class="voltar" data-ir="menu">🏠</button>
+  <h1 class="titulo">Fases</h1>
+  <div id="fases" class="grade"></div>
+</div>
+
+<!-- Garagem -->
+<div id="garagem" class="tela ceu">
+  <button class="voltar" data-ir="menu">🏠</button>
+  <h1 class="titulo">Garagem</h1>
+  <canvas id="previa" width="600" height="340"></canvas>
+  <div id="cores" class="linha quebra"></div>
+  <div id="roupas" class="linha"></div>
+</div>
+
+<!-- Álbum de figurinhas -->
+<div id="album" class="tela ceu rola">
+  <button class="voltar" data-ir="menu">🏠</button>
+  <h1 class="titulo">Álbum</h1>
+  <div id="figs" class="grade"></div>
+</div>
+
+<!-- Área dos pais -->
+<div id="pais" class="tela escuro rola">
+  <button class="voltar" data-ir="menu">🏠</button>
+  <div id="conta" class="cartao">
+    <h2>Área dos pais</h2>
+    <p>Quanto é <b id="pergunta"></b>?</p>
+    <input id="resposta" type="number" inputmode="numeric">
+    <button id="bConta" class="bt">Entrar</button>
+  </div>
+  <div id="opcoes" class="cartao" hidden>
+    <h2>Área dos pais</h2>
+    <label><input type="checkbox" id="oSom"> Sons</label>
+    <label><input type="checkbox" id="oMusica"> Música</label>
+    <label><input type="checkbox" id="oTudo"> Liberar todas as fases</label>
+    <button id="bTrocar" class="bt">Trocar de jogador</button>
+    <button id="bZerar" class="bt perigo">Zerar o progresso deste jogador</button>
+    <img class="marca" src="logo.webp" alt="EG Gamer X">
+    <p class="creditos">GM – Gabriel e Matheus na Terra dos Dinos · v0.2<br>Feito com carinho por <b>EG Gamer X</b><br>Sem anúncios · Sem internet</p>
+  </div>
+</div>
+
+<!-- Fase -->
+<div id="jogo" class="tela">
+  <canvas id="cv"></canvas>
+  <button id="bSair" class="voltar">🏠</button>
+  <div id="fim" hidden>
+    <div id="premio" class="pulsa"></div>
+    <div id="estrelas"></div>
+    <div class="linha">
+      <button id="bDeNovo" class="bola">🔁</button>
+      <button id="bProxima" class="bolao verde">▶️</button>
+      <button id="bMapa" class="bola">🗺️</button>
+    </div>
+  </div>
+</div>
+
+<script src="jogo.js"></script>
+</body>
+</html>

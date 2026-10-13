@@ -1,0 +1,16 @@
+{
+  "name": "GM – Gabriel e Matheus na Terra dos Dinos",
+  "short_name": "GM Dinos",
+  "description": "Joguinho de carros e dinossauros para o Gabriel e o Matheus. Sem anúncios, sem internet. Desenvolvido por EG Gamer X.",
+  "lang": "pt-BR",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "fullscreen",
+  "orientation": "portrait",
+  "background_color": "#000000",
+  "theme_color": "#ff7a00",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

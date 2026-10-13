@@ -1,0 +1,117 @@
+/* GM – Terra dos Dinos · EG Gamer X
+   O jogo vive num "palco" em pé (formato de celular). As medidas usam cqw = 1% da largura do palco,
+   então nada se sobrepõe, seja no celular, no tablet ou no computador. */
+:root { --azul: #1e88ff; --laranja: #ff7a00; --grama: #5cc94a; --ceu: #6ec6ff; --amarelo: #ffd600; }
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html { height: 100%; background: radial-gradient(circle at 50% 30%, #2a3350, #0b0d14); }
+body { margin: 0 auto; width: min(100vw, 58vh); height: 100vh; height: 100dvh; position: relative; overflow: hidden;
+  container-type: size; touch-action: none; user-select: none; -webkit-user-select: none; background: #000;
+  box-shadow: 0 0 60px rgba(0,0,0,.6);
+  font-family: "Arial Rounded MT Bold", "Baloo 2", "Nunito", "Segoe UI", system-ui, sans-serif; }
+button { font: inherit; border: 0; cursor: pointer; padding: 0; color: inherit; }
+
+.tela { position: absolute; inset: 0; display: none; flex-direction: column; align-items: center;
+  justify-content: center; gap: 4cqw; padding: 4cqw; overflow: hidden; }
+.tela.on { display: flex; }
+.tela > * { position: relative; z-index: 1; }
+.tela.rola { justify-content: flex-start; overflow-y: auto; touch-action: pan-y; padding-top: 24cqw; }
+.ceu { background: linear-gradient(#58b8ff 0%, #c9ecff 62%, #6fd95b 62%, #3fa82f 100%); }
+.escuro { background: #1b1f2a; color: #fff; }
+#abertura { background: #000; }
+#abertura img { width: 88cqw; animation: surgir .6s ease-out; }
+#jogo { padding: 0; }
+#cv { width: 100%; height: 100%; display: block; }
+
+.linha { display: flex; gap: 5cqw; align-items: flex-start; justify-content: center; }
+.linha.quebra { flex-wrap: wrap; gap: 3cqw; max-width: 92cqw; }
+.grade { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4cqw; width: 92cqw; padding-bottom: 8cqw; }
+
+.gmlogo { width: 46cqw; }
+.gmlogo.grande { width: 82cqw; }
+.gmlogo svg { width: 100%; display: block; filter: drop-shadow(0 1cqw 0 rgba(0,0,0,.18)); }
+
+/* Botões */
+.bola, .bolao, .voltar { border-radius: 50%; display: grid; place-items: center; line-height: 1;
+  background: linear-gradient(#ffffff, #e3eef7); border: .8cqw solid #fff;
+  box-shadow: 0 1.4cqw 0 rgba(0,0,0,.22), inset 0 -1cqw 0 rgba(0,0,0,.06); }
+.bola { width: 21cqw; height: 21cqw; font-size: 11cqw; }
+.bola.pequena { width: 13cqw; height: 13cqw; font-size: 6.5cqw; }
+.bolao { width: 40cqw; height: 40cqw; font-size: 23cqw; border-width: 2cqw;
+  background: radial-gradient(circle at 35% 28%, #ffb04d, var(--laranja) 60%, #e05f00); }
+.bolao.verde { width: 30cqw; height: 30cqw; font-size: 16cqw; background: radial-gradient(circle at 35% 28%, #7ee081, #43a047 60%, #2e7d32); }
+.bola:active, .bolao:active, .voltar:active, .rosto:active, .fase:active, .avatar:active { transform: translateY(1cqw) scale(.96); box-shadow: none; }
+.voltar { position: absolute !important; top: 4cqw; left: 4cqw; width: 14cqw; height: 14cqw; font-size: 8cqw; z-index: 5 !important; }
+.item { display: flex; flex-direction: column; align-items: center; gap: 1.6cqw; }
+.item span, .rotulo { font-size: 4.2cqw; font-weight: 900; color: #fff; letter-spacing: .2cqw;
+  text-shadow: 0 .5cqw 0 rgba(0,0,0,.35), 0 0 1.5cqw rgba(0,0,0,.25); }
+.rotulo { font-size: 7.5cqw; letter-spacing: .8cqw; margin-top: -2cqw; }
+.titulo { position: absolute !important; top: 6.5cqw; left: 0; right: 0; margin: 0; text-align: center; font-size: 8cqw; color: #fff;
+  text-shadow: 0 .6cqw 0 rgba(0,0,0,.3); pointer-events: none; }
+
+/* Menu principal */
+#menu { justify-content: space-between; padding: 4cqw 4cqw 3cqw; }
+.topo { width: 100%; display: flex; align-items: center; justify-content: space-between; }
+.avatar { width: 15cqw; height: 15cqw; background: none; }
+.avatar svg { width: 100%; display: block; filter: drop-shadow(0 .8cqw 0 rgba(0,0,0,.2)); }
+.placar { background: rgba(0,0,0,.28); color: #fff; font-size: 5.5cqw; font-weight: 900; padding: 1.6cqw 5cqw; border-radius: 10cqw; }
+.centro { display: flex; flex-direction: column; align-items: center; gap: 4cqw; }
+.rodape { display: flex; align-items: center; gap: 3cqw; background: #000; color: #fff; border-radius: 12cqw;
+  padding: 1.2cqw 6cqw 1.2cqw 1.2cqw; border: .6cqw solid var(--laranja); box-shadow: 0 1cqw 0 rgba(0,0,0,.25); }
+.rodape img { width: 14cqw; height: 14cqw; border-radius: 50%; display: block; }
+.rodape span { font-size: 3.2cqw; line-height: 1.25; opacity: .9; }
+.rodape b { font-size: 4.6cqw; color: var(--laranja); letter-spacing: .3cqw; }
+
+/* Enfeites animados do fundo */
+.nuvem, .passeio { position: absolute !important; z-index: 0 !important; pointer-events: none; line-height: 1; }
+.nuvem { font-size: 20cqw; opacity: .9; animation: nuvem 40s linear infinite; }
+.nuvem.n1 { top: 14%; } .nuvem.n2 { top: 30%; font-size: 12cqw; animation-duration: 60s; animation-delay: -25s; }
+.passeio { top: 55%; font-size: 14cqw; animation: passeio 22s linear infinite; }
+.passeio.p2 { top: 64%; font-size: 9cqw; animation-duration: 30s; animation-delay: -12s; }
+@keyframes nuvem { from { left: -30cqw; } to { left: 110cqw; } }
+@keyframes passeio { from { left: 110cqw; } to { left: -30cqw; } }
+
+/* Selo da marca nas telas de entrada (fica no rodapé, longe dos botões) */
+.selo { position: absolute !important; bottom: 5cqw; left: 50%; transform: translateX(-50%); width: 24cqw;
+  border-radius: 50%; box-shadow: 0 1cqw 0 rgba(0,0,0,.25); pointer-events: none; }
+.marca { width: 60%; align-self: center; border-radius: 50%; }
+
+.rosto { width: 42cqw; height: 42cqw; background: none; animation: balanca 1.6s ease-in-out infinite; }
+.rosto:nth-child(2) { animation-delay: -.8s; }
+.rosto svg { width: 100%; filter: drop-shadow(0 1.4cqw 0 rgba(0,0,0,.2)); }
+
+.fase { position: relative; aspect-ratio: 1; border-radius: 26%; background: linear-gradient(#fff, #e3eef7); font-size: 13cqw; line-height: 1;
+  border: .8cqw solid #fff; box-shadow: 0 1.2cqw 0 rgba(0,0,0,.22); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1cqw; }
+.fase small { font-size: 4cqw; letter-spacing: .3cqw; }
+.fase i { position: absolute; top: -2cqw; left: -2cqw; width: 8cqw; height: 8cqw; border-radius: 50%; background: var(--laranja); color: #fff;
+  font: 900 4.4cqw/8cqw "Segoe UI", system-ui, sans-serif; text-align: center; border: .6cqw solid #fff; }
+.fase.trancada { background: #cfd8dc; filter: grayscale(1); opacity: .7; }
+.fase.fig { font-size: 16cqw; border: 1.2cqw dashed var(--laranja); }
+.fase.fig.falta { border-color: #b0bec5; color: transparent; text-shadow: 0 0 0 #b0bec5; }
+
+#previa { width: 86cqw; }
+.cor { width: 15cqw; height: 15cqw; border-radius: 50%; border: 1.4cqw solid #fff; box-shadow: 0 1cqw 0 rgba(0,0,0,.2); }
+.cor.sel, .bola.sel { outline: 1.4cqw solid var(--amarelo); }
+
+#fim { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 4cqw; background: rgba(255,255,255,.35); }
+#fim[hidden] { display: none; }
+#fim .linha { align-items: center; }
+#premio { font-size: 40cqw; line-height: 1; filter: drop-shadow(0 1.5cqw 0 rgba(0,0,0,.2)); }
+#estrelas { font-size: 13cqw; letter-spacing: 1cqw; }
+
+.cartao { background: #262c3b; border-radius: 5cqw; padding: 6cqw; width: 90cqw; display: flex;
+  flex-direction: column; gap: 4cqw; font-size: 18px; font-family: "Segoe UI", system-ui, sans-serif; }
+.cartao[hidden] { display: none; }
+.cartao h2 { margin: 0; color: var(--laranja); }
+.cartao p { margin: 0; }
+.cartao label { display: flex; align-items: center; gap: 12px; }
+.cartao input[type=checkbox] { width: 26px; height: 26px; accent-color: var(--laranja); }
+.cartao input[type=number] { font-size: 24px; padding: 10px; border-radius: 12px; border: 0; width: 100%; }
+.bt { background: var(--laranja); color: #fff; font-size: 18px; padding: 14px; border-radius: 14px; font-family: "Segoe UI", system-ui, sans-serif; }
+.bt.perigo { background: #c62828; }
+.creditos { font-size: 14px; opacity: .8; text-align: center; line-height: 1.6; }
+
+.pulsa { animation: pulsa 1.2s ease-in-out infinite; }
+@keyframes pulsa { 50% { transform: scale(1.07); } }
+@keyframes balanca { 0%,100% { transform: rotate(-6deg); } 50% { transform: rotate(6deg) scale(1.05); } }
+@keyframes surgir { from { opacity: 0; transform: scale(.8); } }

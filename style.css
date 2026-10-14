@@ -65,8 +65,8 @@ button { font: inherit; border: 0; cursor: pointer; padding: 0; color: inherit; 
 .nuvem, .passeio { position: absolute !important; z-index: 0 !important; pointer-events: none; line-height: 1; }
 .nuvem { font-size: 20cqw; opacity: .9; animation: nuvem 40s linear infinite; }
 .nuvem.n1 { top: 14%; } .nuvem.n2 { top: 30%; font-size: 12cqw; animation-duration: 60s; animation-delay: -25s; }
-.passeio { top: 55%; font-size: 14cqw; animation: passeio 22s linear infinite; }
-.passeio.p2 { top: 64%; font-size: 9cqw; animation-duration: 30s; animation-delay: -12s; }
+.passeio { top: 55%; font-size: 14cqw; animation: passeio 22s linear infinite, pula .45s ease-in-out infinite alternate; }
+.passeio.p2 { top: 64%; font-size: 9cqw; animation-duration: 30s, .35s; animation-delay: -12s, 0s; }
 @keyframes nuvem { from { left: -30cqw; } to { left: 110cqw; } }
 @keyframes passeio { from { left: 110cqw; } to { left: -30cqw; } }
 
@@ -115,3 +115,4 @@ button { font: inherit; border: 0; cursor: pointer; padding: 0; color: inherit; 
 @keyframes pulsa { 50% { transform: scale(1.07); } }
 @keyframes balanca { 0%,100% { transform: rotate(-6deg); } 50% { transform: rotate(6deg) scale(1.05); } }
 @keyframes surgir { from { opacity: 0; transform: scale(.8); } }
+@keyframes pula { to { transform: translateY(-2.5cqw) rotate(-6deg); } }

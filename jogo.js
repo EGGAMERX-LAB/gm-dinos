@@ -11,7 +11,7 @@ const JOG = { gabriel: { nome: 'Gabriel', cor: '#1e88ff', letra: 'G' }, matheus:
 const CORES = ['#e53935', '#ffd600', '#43a047', '#1e88ff', '#ff7a00', '#ec407a', '#8e24aa', '#ffffff'];
 const DINOS = ['🦕', '🦖', '🐊', '🐢', '🦎', '🦣', '🐉', '🦤', '🐸', '🦜'];
 const COMIDAS = ['🍎', '🍌', '🍉', '🍇', '🥕', '🍓', '🥦', '🍐'];
-const FIGURINHAS = ['🦕', '🦖', '🐣', '🐊', '🏅', '🦎', '🎈', '🐢', '🦤', '🦣', '🐉', '🏆'];
+const FIGURINHAS = ['🦕', '🦖', '🐣', '🐊', '🏅', '🦎', '🎈', '🐢', '🦤', '🦣', '🐉', '🍓', '🎵', '🧼', '🌙', '🏆'];
 
 /* ---------- Dados salvos (cada criança tem o seu) ---------- */
 const ler = k => { try { return JSON.parse(localStorage.getItem(k)) || {}; } catch (e) { return {}; } };
@@ -21,6 +21,7 @@ let jog = 'gabriel', save = null;
 function carregar(j) {
   jog = j;
   save = Object.assign({ estrelas: [], cor: JOG[j].cor, roupa: 0 }, ler('gm_save_' + j));
+  if (save.estrelas.length === 12) { const festa = save.estrelas[11]; save.estrelas[11] = 0; while (save.estrelas.length < 16) save.estrelas.push(0); save.estrelas[15] = festa; }   // v0.2 → v0.3: a festa virou a fase 16
   while (save.estrelas.length < FASES.length) save.estrelas.push(0);
 }
 const gravar = () => gravarEm('gm_save_' + jog, save);
@@ -59,7 +60,9 @@ const som = {
   crack: S(() => { ruido(.08, .3, 3000); nota(900, .06, 'square', .08); }),
   motor: S(() => nota(90, .15, 'sawtooth', .16, 0, 160)),
   pulo: S(() => nota(300, .3, 'sine', .2, 0, 800)),
-  fogo: S(() => { ruido(.5, .25, 1500); nota(1200, .4, 'sine', .1, 0, 300); })
+  fogo: S(() => { ruido(.5, .25, 1500); nota(1200, .4, 'sine', .1, 0, 300); }),
+  nham: S(() => { nota(260, .07, 'square', .1); nota(200, .07, 'square', .1, .11); nota(160, .09, 'square', .08, .22); }),
+  ninar: S(() => [784, 659, 523, 659, 587, 494, 523].forEach((f, i) => nota(f, .5, 'sine', .1, i * .35)))
 };
 function falar(t) {
   if (!cfg.som) return;
@@ -164,6 +167,40 @@ function ovo(x, y, w, h, rot, rach) {
   c.restore();
 }
 
+/* Dinossauro desenhado e animado (olha para a direita). x, y = pés no chão; s = tamanho.
+   o.boca 0..1 abre a boca · o.dorme 0..1 deita e fecha os olhos · o.anda mexe as pernas · o.vira olha para a esquerda */
+const DCOR = ['#66bb6a', '#42a5f5', '#ffa726', '#ab47bc', '#ef5350', '#26c6da'];
+function elip(x, y, rx, ry, cor, rot = 0) { c.fillStyle = cor; c.beginPath(); c.ellipse(x, y, rx, ry, rot, 0, 7); c.fill(); }
+function dino(x, y, s, o = {}) {
+  const t = fs ? fs.t : performance.now() / 1000, cor = o.cor || '#66bb6a', bar = o.barriga || '#dcedc8', esp = o.esp || '#ff9800';
+  const dorme = o.dorme || 0, boca = o.boca || 0, resp = 1 + Math.sin(t * (dorme > .5 ? 1.5 : 2.5)) * .03;
+  c.save(); c.translate(x, y); if (o.vira) c.scale(-1, 1); c.scale(s, s);
+  elip(0, 0, .5, .06, 'rgba(0,0,0,.15)');
+  c.translate(0, dorme * .2);
+  if (dorme < .5) {                                           // pernas
+    const pa = o.anda ? Math.sin(t * 14) * .07 : 0;
+    for (const px of [-.2 - pa, .17 + pa]) { rrp(px - .075, -.32, .15, .32, .06); c.fillStyle = cor; c.fill(); elip(px + .02, -.015, .09, .035, 'rgba(0,0,0,.15)'); }
+  }
+  c.save(); c.translate(-.3, -.42); c.rotate(Math.sin(t * (dorme > .5 ? 1 : 4)) * .15);   // cauda
+  c.fillStyle = cor; c.beginPath(); c.moveTo(.05, -.15); c.quadraticCurveTo(-.35, -.14, -.58, .06); c.quadraticCurveTo(-.3, .1, .05, .15); c.fill();
+  c.restore();
+  c.fillStyle = esp;                                          // espinhos
+  for (const [sx, sy] of [[-.36, -.6], [-.2, -.7], [-.03, -.74], [.13, -.71]]) { c.beginPath(); c.moveTo(sx - .07, sy + .06); c.lineTo(sx, sy - .09); c.lineTo(sx + .07, sy + .06); c.fill(); }
+  c.save(); c.translate(0, -.42); c.scale(1, resp); elip(0, 0, .4, .3, cor); elip(.06, .08, .26, .18, bar); c.restore();   // corpo
+  const hx = .4, hy = -.86 + dorme * .4;
+  c.strokeStyle = cor; c.lineWidth = .2; c.lineCap = 'round'; c.beginPath(); c.moveTo(.18, -.52); c.lineTo(hx - .02, hy + .05); c.stroke();   // pescoço
+  elip(hx, hy, .22, .19, cor); elip(hx + .17, hy + .04, .16, .12, cor);                                           // cabeça e focinho
+  circ(hx + .29, hy - .01, .016, 'rgba(0,0,0,.35)');
+  if (boca > .05) { elip(hx + .2, hy + .09, .1, .02 + .09 * boca, '#7b1f2b'); elip(hx + .2, hy + .1 + .05 * boca, .06, .03 * boca, '#f48fb1'); }
+  else { c.strokeStyle = 'rgba(0,0,0,.5)'; c.lineWidth = .018; c.beginPath(); c.arc(hx + .17, hy + .02, .08, .4, 1.35); c.stroke(); }
+  elip(hx + .05, hy + .07, .045, .03, 'rgba(255,120,150,.5)');
+  if (dorme > .5 || t % 3.3 < .13) {                          // olho fechado (piscando ou dormindo)
+    c.strokeStyle = '#222'; c.lineWidth = .022; c.beginPath(); c.arc(hx + .03, hy - .07, .05, .3, Math.PI - .3); c.stroke();
+  } else { circ(hx + .03, hy - .07, .07, '#fff'); circ(hx + .05, hy - .07, .04, '#222'); circ(hx + .06, hy - .085, .014, '#fff'); }
+  elip(.3, -.38, .055, .1, cor, .5);                          // bracinho
+  c.restore();
+}
+
 /* ---------- Partículas (confete, bolhas, fogos) ---------- */
 let parts = [];
 function festa(x, y, n = 14) {
@@ -214,14 +251,16 @@ function vencer() {
   fim = true;
   save.estrelas[idx] = Math.min(3, save.estrelas[idx] + 1); gravar();
   for (let k = 0; k < 6; k++) setTimeout(() => festa(Math.random() * W, H * (.2 + Math.random() * .4), 22), k * 180);
-  som.festa(); setTimeout(som.rugido, 500); setTimeout(som.buzina, 1300);
+  som.festa();
+  if (F.calmo) setTimeout(som.ninar, 600);            // fases de dormir: canção de ninar em vez de rugido
+  else { setTimeout(som.rugido, 500); setTimeout(som.buzina, 1300); }
   setTimeout(() => {
     if (tela !== 'jogo' || !fim) return;
     $('#premio').textContent = FIGURINHAS[idx];
     $('#estrelas').textContent = '⭐'.repeat(save.estrelas[idx]) + '☆'.repeat(3 - save.estrelas[idx]);
     $('#fim').hidden = false;
     falar('Muito bem, ' + JOG[jog].nome + '!');
-  }, 1500);
+  }, F.calmo ? 2300 : 1500);
 }
 function barra() {
   const x = W * .28, w = W * .6, y = 6 * U, h = 4 * U;
@@ -254,15 +293,18 @@ cv.addEventListener('pointermove', e => { if (apertado && F && !fim && F.mover) 
 for (const ev of ['pointerup', 'pointercancel', 'pointerleave']) cv.addEventListener(ev, () => { apertado = false; if (F && F.solta) F.solta(fs); });
 addEventListener('contextmenu', e => e.preventDefault());
 
-/* Arrastar (ou só tocar e soltar) um item: ele sempre voa para o lugar certo */
+/* Arrastar (ou só tocar e soltar) um item: ele sempre voa para o lugar certo.
+   Só um item fica na mão por vez: se outro dedo (ou a palma) tocar a tela, o primeiro é solto.
+   Antes ele ficava preso na mão e a fase travava. */
 const levar = {
   toque(s, x, y) {
+    levar.solta(s);
     let m = null, md = 17 * U;
     for (const it of s.itens) { if (it.est !== 'casa') continue; const d = Math.hypot(it.x * W - x, it.y * H - y); if (d < md) { md = d; m = it; } }
     if (m) { m.est = 'mao'; s.mao = m; som.pop(); }
   },
   mover(s, x, y) { if (s.mao) { s.mao.x = x / W; s.mao.y = y / H; } },
-  solta(s) { if (s.mao) { s.mao.est = 'voa'; s.mao = null; } },
+  solta(s) { for (const it of s.itens) if (it.est === 'mao') it.est = 'voa'; s.mao = null; },
   upd(s, dt, chegou) {
     for (const it of s.itens) if (it.est === 'voa') {
       const k = Math.min(1, dt * 9); it.x += (it.tx - it.x) * k; it.y += (it.ty - it.y) * k;
@@ -300,44 +342,52 @@ function faseEsfregar(o) {
   };
 }
 const refCarro = () => ({ x: W * .5, y: H * .68, L: Math.min(W * .86, H * .6) });
-const refDino = () => ({ x: W * .5, y: H * .5, L: Math.min(W * .8, H * .55) });
+const refDino = () => ({ x: W * .45, y: H * .66, L: Math.min(W * .5, H * .3) });
+function bolhaDes(x, y, r) {
+  const g = c.createRadialGradient(x - r * .35, y - r * .35, r * .1, x, y, r);
+  g.addColorStop(0, 'rgba(255,255,255,.75)'); g.addColorStop(.6, 'rgba(170,220,255,.15)'); g.addColorStop(1, 'rgba(255,170,255,.4)');
+  c.fillStyle = g; c.beginPath(); c.arc(x, y, r, 0, 7); c.fill();
+  c.strokeStyle = 'rgba(255,255,255,.85)'; c.lineWidth = .4 * U; c.stroke();
+}
+const nota1 = (x, y) => parts.push({ x, y, vx: (Math.random() - .5) * 30 * U, vy: -40 * U, g: 10 * U, vida: 1.2, s: 3 * U, ch: Math.random() < .5 ? '🎵' : '🎶' });
 
 const FASES = [
-  /* 1 — Garagem: pintar o carrinho */
-  { ic: '🎨', base: 6, fixo: true,
+  /* 1 — Garagem: pintar o carrinho com as 8 latas */
+  { ic: '🎨', base: 8, fixo: true,
     ini(s) { s.cor = save.cor; s.us = []; s.pulo = 0; },
-    lata(i) { return [(.2 + .3 * (i % 3)) * W, (i < 3 ? .73 : .89) * H]; },
+    lata(i) { return [(.14 + .24 * (i % 4)) * W, (i < 4 ? .74 : .89) * H]; },
     upd(s, dt) { s.pulo = Math.max(0, s.pulo - dt * 2.5); },
     des(s) {
       c.fillStyle = '#ffe0b2'; c.fillRect(0, 0, W, H); em('🔧', W * .15, H * .2, 10 * U, -.4); em('🛞', W * .85, H * .22, 12 * U);
       chao(H * .58, '#b0bec5');
       carro(W * .5, H * .56 - Math.sin(s.pulo * Math.PI) * 4 * U, Math.min(W * .8, H * .5), s.cor);
-      for (let i = 0; i < 6; i++) {
+      for (let i = 0; i < 8; i++) {
         const [x, y] = this.lata(i);
-        rr(x - 6 * U, y - 5 * U, 12 * U, 12 * U, 2 * U, '#cfd8dc');
-        c.fillStyle = CORES[i]; c.beginPath(); c.ellipse(x, y - 5 * U, 5.4 * U, 2 * U, 0, 0, 7); c.fill();
-        rrp(x - 6 * U, y - 1 * U, 12 * U, 5 * U, 1 * U); c.fill();
-        if (s.us.includes(i)) em('⭐', x + 6 * U, y - 7 * U, 6 * U);
+        rr(x - 5 * U, y - 5 * U, 10 * U, 11 * U, 2 * U, '#cfd8dc');
+        c.fillStyle = CORES[i]; c.beginPath(); c.ellipse(x, y - 5 * U, 4.5 * U, 1.8 * U, 0, 0, 7); c.fill();
+        rrp(x - 5 * U, y - .5 * U, 10 * U, 4.5 * U, 1 * U); c.fill();
+        c.strokeStyle = 'rgba(0,0,0,.2)'; c.lineWidth = .3 * U; c.stroke();
+        if (s.us.includes(i)) em('⭐', x + 5 * U, y - 7 * U, 6 * U);
       }
     },
     toque(s, x, y) {
-      for (let i = 0; i < 6; i++) {
+      for (let i = 0; i < 8; i++) {
         const [lx, ly] = this.lata(i);
-        if (Math.hypot(lx - x, ly - y) < 13 * U) {
+        if (Math.hypot(lx - x, ly - y) < 11 * U) {
           s.cor = save.cor = CORES[i]; gravar(); s.pulo = 1; som.splash(); respingo(W * .5, H * .42, CORES[i], 26);
           if (!s.us.includes(i)) { s.us.push(i); ponto(lx, ly); }
           break;
         }
       }
     },
-    dica(s) { for (let i = 0; i < 6; i++) if (!s.us.includes(i)) return this.lata(i); return null; } },
+    dica(s) { for (let i = 0; i < 8; i++) if (!s.us.includes(i)) return this.lata(i); return null; } },
 
   /* 2 — Estrada dos ovos: o carro anda sozinho e segue o dedo */
-  { ic: '🥚', base: 12,
+  { ic: '🥚', base: 30,
     ini(s) { s.cx = .5; s.al = .5; s.ov = []; s.sp = 0; },
     upd(s, dt) {
       s.cx += (s.al - s.cx) * Math.min(1, dt * 10); s.sp -= dt;
-      if (s.sp <= 0 && !fim) { s.sp = .9; s.ov.push({ x: .22 + Math.random() * .56, y: -.1, ch: Math.random() < .8 ? '🥚' : '⭐' }); }
+      if (s.sp <= 0 && !fim) { s.sp = .8; const r = Math.random(); s.ov.push({ x: .22 + Math.random() * .56, y: -.1, ch: r < .7 ? '🥚' : r < .9 ? '⭐' : '🍎' }); }
       for (const o of s.ov) {
         o.y += dt * .3;
         if (!o.p && Math.abs(o.x - s.cx) * W < 15 * U && Math.abs(o.y - .8) * H < 11 * U) { o.p = 1; som.pop(); ponto(o.x * W, o.y * H); }
@@ -356,16 +406,17 @@ const FASES = [
     toque(s, x) { s.al = cl(x / W, .2, .8); }, mover(s, x) { s.al = cl(x / W, .2, .8); },
     dica: s => [(.5 + .25 * Math.sin(s.t * 2)) * W, H * .8] },
 
-  /* 3 — Ovos chocando: tocar várias vezes até nascer */
-  { ic: '🐣', base: 3,
-    ini(s) { s.tq = 0; s.nasc = 0; s.bal = 0; s.d = sorteio(DINOS.length); },
+  /* 3 — Ovos chocando: tocar várias vezes até nascer um dino colorido */
+  { ic: '🐣', base: 6,
+    ini(s) { s.tq = 0; s.nasc = 0; s.bal = 0; s.d = sorteio(DCOR.length); },
     upd(s, dt) { s.bal = Math.max(0, s.bal - dt * 3); if (s.nasc > 0) { s.nasc -= dt; if (s.nasc <= 0 && !fim) { s.tq = 0; s.d++; s.nasc = 0; } else if (s.nasc <= 0) s.nasc = .01; } },
     des(s) {
       fundo(); chao(H * .66); const x = W * .5, y = H * .55;
       c.fillStyle = '#8d6e63'; c.beginPath(); c.ellipse(x, y + 15 * U, 24 * U, 7 * U, 0, 0, 7); c.fill();
       if (s.nasc > 0) {
-        ovo(x - 14 * U, y + 10 * U, 16 * U, 14 * U, -.6, 3); ovo(x + 14 * U, y + 10 * U, 16 * U, 14 * U, .6, 3);
-        em(DINOS[s.d % DINOS.length], x, y - Math.abs(Math.sin(s.t * 7)) * 4 * U, 30 * U);
+        ovo(x - 16 * U, y + 10 * U, 16 * U, 14 * U, -.6, 3); ovo(x + 16 * U, y + 10 * U, 16 * U, 14 * U, .6, 3);
+        const cresce = Math.min(1, (1.8 - s.nasc) * 4);
+        dino(x - 4 * U, y + 12 * U - Math.abs(Math.sin(s.t * 7)) * 5 * U, 26 * U * cresce + U, { cor: DCOR[s.d % DCOR.length], boca: Math.sin(s.t * 6) > .3 ? .7 : 0 });
       } else ovo(x, y, 26 * U, 34 * U, Math.sin(s.t * 40) * s.bal * .15, s.tq);
     },
     toque(s) {
@@ -376,11 +427,11 @@ const FASES = [
     dica: s => s.nasc > 0 ? null : [W * .5, H * .55] },
 
   /* 4 — Lava-rápido: esfregar a lama do carro */
-  faseEsfregar({ ic: '🧽', base: 14, ref: refCarro, x0: -.44, x1: .44, y0: -.5, y1: -.12,
+  faseEsfregar({ ic: '🧽', base: 26, ref: refCarro, x0: -.44, x1: .44, y0: -.5, y1: -.12,
     des() { c.fillStyle = '#b3e5fc'; c.fillRect(0, 0, W, H); em('🚿', W * .2, H * .16, 14 * U); em('💧', W * .8, H * .2, 10 * U); chao(H * .66, '#90a4ae'); const r = refCarro(); carro(r.x, r.y, r.L, save.cor); } }),
 
   /* 5 — Corrida com o T-Rex: tocar sem parar; todo mundo ganha medalha */
-  { ic: '🏁', base: 30,
+  { ic: '🏁', base: 60,
     ini(s) { s.v = 0; s.sc = 0; },
     upd(s, dt) { s.v = Math.max(0, s.v - dt * 1.5); s.sc += s.v * dt * 45 * U; },
     des(s) {
@@ -389,9 +440,10 @@ const FASES = [
       for (let k = 0; k < 6; k++) { const x = (((k * larg / 6 - s.sc) % larg) + larg) % larg - W * .2; em(k % 2 ? '🌴' : '🌋', x, H * .56, (k % 2 ? 16 : 20) * U); }
       const fx = W * .62 + (s.meta - s.feito) * 7 * U; if (fx < W * 1.3) em('🏁', fx + 14 * U, H * .66, 22 * U);
       const corre = s.v > .05 ? 1 : .25;
-      em('🦖', W * .2, H * .74 - Math.abs(Math.sin(s.t * 9)) * 3 * U * corre, 28 * U, 0, 1, true);
+      dino(W * .2, H * .86 - Math.abs(Math.sin(s.t * 9)) * 3 * U * corre, 19 * U,
+        { cor: '#ef6c00', barriga: '#ffe0b2', esp: '#5d4037', anda: corre > .5, boca: s.v > 1.6 ? .8 : 0 });
       carro(W * .62, H * .86 - Math.abs(Math.sin(s.t * 14)) * U * corre, 34 * U, save.cor, s.sc / (4 * U));
-      if (fim) { em('🏅', W * .2, H * .58, 12 * U); em('🏅', W * .62, H * .62, 12 * U); }
+      if (fim) { em('🏅', W * .22, H * .6, 12 * U); em('🏅', W * .62, H * .62, 12 * U); }
     },
     toque(s) {
       s.v = Math.min(3, s.v + .8); s.feito++; som.motor();
@@ -400,36 +452,47 @@ const FASES = [
     },
     dica: () => [W * .5, H * .45] },
 
-  /* 6 — Comidinha: levar as frutas até o dino */
-  { ic: '🍎', base: 8,
-    ini(s) { s.boca = 0; s.itens = [.2, .5, .8].map(x => ({ ch: COMIDAS[sorteio(COMIDAS.length)], x, y: .8, hx: x, hy: .8, tx: .4, ty: .3, est: 'casa' })); },
+  /* 6 — Comidinha: o dino abre a boca, come, e no fim dorme */
+  { ic: '🍎', base: 14, calmo: true,
+    S: () => Math.min(W * .45, H * .26),
+    boca() { const S = this.S(); return [W * .4 + .6 * S, H * .6 - .75 * S]; },
+    ini(s) { s.b = 0; s.mast = 0; s.dorme = 0; s.pulo = 0; s.itens = [.2, .5, .8].map(x => ({ ch: COMIDAS[sorteio(COMIDAS.length)], x, y: .86, hx: x, hy: .86, tx: .6, ty: .5, est: 'casa' })); },
     upd(s, dt) {
-      s.boca = Math.max(0, s.boca - dt * 2.5);
+      const [bx, by] = this.boca();
+      for (const it of s.itens) { it.tx = bx / W; it.ty = by / H; }
+      const quer = s.itens.some(i => i.est === 'mao' || i.est === 'voa');
+      s.mast = Math.max(0, s.mast - dt); s.pulo = Math.max(0, s.pulo - dt * 2);
+      const alvo = fim ? 0 : s.mast > 0 ? (Math.sin(s.mast * 25) > 0 ? .6 : .1) : quer ? 1 : 0;
+      s.b += (alvo - s.b) * Math.min(1, dt * 12);
+      if (fim) s.dorme = Math.min(1, s.dorme + dt * .8);
       levar.upd(s, dt, it => {
-        s.boca = 1; som.rugidinho(); ponto(it.x * W, it.y * H);
+        s.mast = .7; s.pulo = 1; som.nham(); ponto(it.x * W, it.y * H);
         const ativos = s.itens.filter(i => i !== it && i.est !== 'fora').length;
         if (s.feito + ativos < s.meta) Object.assign(it, { ch: COMIDAS[sorteio(COMIDAS.length)], x: it.hx, y: it.hy, est: 'casa' }); else it.est = 'fora';
       });
     },
     des(s) {
-      fundo(); chao(H * .55); em('🌴', W * .12, H * .46, 22 * U); em('🌴', W * .9, H * .5, 18 * U);
-      em('🦕', W * .52, H * .36, (46 + Math.sin(s.boca * Math.PI) * 6) * U);
+      fundo(); chao(H * .6); em('🌴', W * .1, H * .5, 20 * U); em('🌳', W * .9, H * .52, 18 * U);
+      const S = this.S();
+      dino(W * .4, H * .6 - Math.sin(s.pulo * Math.PI) * 3 * U, S, { boca: s.b, dorme: s.dorme });
+      if (s.dorme > 0) { c.fillStyle = `rgba(10,15,60,${.45 * s.dorme})`; c.fillRect(0, 0, W, H); em('💤', W * .4 + .6 * S, H * .6 - S * (.95 + .08 * Math.sin(s.t * 2)), 10 * U, 0, s.dorme); }
       for (const it of s.itens) if (it.est !== 'fora' && it.est !== 'ok') em(it.ch, it.x * W, it.y * H, (it.est === 'mao' ? 20 : 16) * U);
     },
     toque: levar.toque, mover: levar.mover, solta: levar.solta,
     dica(s) { const it = s.itens.find(i => i.est === 'casa'); return it ? [it.x * W, it.y * H] : null; } },
 
-  /* 7 — Balões: estourar os balões */
-  { ic: '🎈', base: 15,
-    novo(y) { return { x: .12 + Math.random() * .76, y: y == null ? 1.12 : y, cor: CORES[sorteio(7)], v: .07 + Math.random() * .06, f: Math.random() * 6 }; },
+  /* 7 — Balões: estourar muitos balões */
+  { ic: '🎈', base: 40,
+    novo(y) { return { x: .12 + Math.random() * .76, y: y == null ? 1.12 : y, cor: CORES[sorteio(7)], v: .07 + Math.random() * .06, f: Math.random() * 6, d: Math.random() < .2 }; },
     bx: (s, b) => (b.x + Math.sin(s.t * 1.5 + b.f) * .02) * W,
-    ini(s) { s.b = []; for (let i = 0; i < 6; i++) s.b.push(this.novo(.3 + Math.random() * .7)); },
+    ini(s) { s.b = []; for (let i = 0; i < 7; i++) s.b.push(this.novo(.3 + Math.random() * .7)); },
     upd(s, dt) { for (const b of s.b) { b.y -= b.v * dt; if (b.y < -.12) Object.assign(b, this.novo()); } },
     des(s) {
       fundo(); chao(H * .9);
       for (const b of s.b) {
         const x = this.bx(s, b), y = b.y * H;
         c.strokeStyle = '#fff'; c.lineWidth = U * .4; c.beginPath(); c.moveTo(x, y + 10 * U); c.quadraticCurveTo(x + 3 * U, y + 16 * U, x, y + 22 * U); c.stroke();
+        if (b.d) em('🦕', x, y + 25 * U, 8 * U);
         c.fillStyle = b.cor; c.beginPath(); c.ellipse(x, y, 8.5 * U, 10.5 * U, 0, 0, 7); c.fill();
         c.fillStyle = 'rgba(255,255,255,.45)'; c.beginPath(); c.ellipse(x - 3 * U, y - 4 * U, 2 * U, 3.2 * U, .5, 0, 7); c.fill();
       }
@@ -442,7 +505,7 @@ const FASES = [
     dica(s) { const b = s.b.filter(b => b.y > .15 && b.y < .85)[0]; return b ? [this.bx(s, b), b.y * H] : null; } },
 
   /* 8 — Ponte de pedras: cada toque é um pulo */
-  { ic: '🪨', base: 10,
+  { ic: '🪨', base: 24,
     ini(s) { s.i = 0; s.j = 0; s.cam = 0; },
     upd(s, dt) {
       if (s.j > 0) { s.j += dt / .45; if (s.j >= 1) { s.j = 0; s.i++; ponto(W * .35, H * .5); } }
@@ -465,7 +528,7 @@ const FASES = [
     dica: () => [W * .5, H * .4] },
 
   /* 9 — Esconde-esconde: achar os dinos nas moitas */
-  { ic: '🌳', base: 8, passo: 4,
+  { ic: '🌳', base: 16, passo: 4,
     ini(s) { this.rod(s); },
     rod(s) { s.m = embaralha(DINOS).slice(0, 4).map((ch, i) => ({ ch, x: i % 2 ? .72 : .28, y: i < 2 ? .42 : .78, a: 0, ok: 0 })); s.esp = 0; },
     upd(s, dt) { for (const m of s.m) if (m.ok) m.a = Math.min(1, m.a + dt * 4); if (!fim && s.m.every(m => m.ok)) { s.esp += dt; if (s.esp > 1.3) this.rod(s); } },
@@ -486,11 +549,14 @@ const FASES = [
     dica(s) { const m = s.m.find(m => !m.ok); return m ? [m.x * W, m.y * H] : null; } },
 
   /* 10 — Banho no dino: esfregar a lama do dinossauro */
-  faseEsfregar({ ic: '🛁', base: 16, ref: refDino, x0: -.3, x1: .3, y0: -.28, y1: .28,
-    des() { fundo(); chao(H * .7, '#81d4fa'); em('💧', W * .15, H * .3, 9 * U); em('💧', W * .88, H * .42, 7 * U); const r = refDino(); em('🦕', r.x, r.y, r.L * .85); } }),
+  faseEsfregar({ ic: '🛁', base: 26, ref: refDino, x0: -.35, x1: .45, y0: -.85, y1: -.25,
+    des(s) {
+      fundo(); chao(H * .66, '#81d4fa'); em('💧', W * .15, H * .3, 9 * U); em('💧', W * .88, H * .42, 7 * U);
+      const r = refDino(); dino(r.x, r.y - (fim ? Math.abs(Math.sin(s.t * 8)) * 4 * U : 0), r.L, { boca: fim ? .8 : 0 });
+    } }),
 
   /* 11 — Encaixe: cada dino na sua sombra */
-  { ic: '🧩', base: 6, passo: 3,
+  { ic: '🧩', base: 12, passo: 3,
     ini(s) { this.rod(s); },
     rod(s) {
       const xs = [.2, .5, .8], ord = embaralha([0, 1, 2]);
@@ -513,8 +579,140 @@ const FASES = [
     toque: levar.toque, mover: levar.mover, solta: levar.solta,
     dica(s) { const it = s.itens.find(i => i.est === 'casa'); return it ? [it.x * W, it.y * H] : null; } },
 
-  /* 12 — Festa dos dinos: soltar fogos tocando no céu */
-  { ic: '🎆', base: 20,
+  /* 12 — Cesta de frutas: o dino anda atrás do dedo e pega as frutas que caem */
+  { ic: '🧺', base: 25,
+    S: () => Math.min(W * .3, H * .18),
+    ini(s) { s.cx = .5; s.al = .5; s.fr = []; s.sp = 0; s.vira = false; s.b = 0; s.pulo = 0; s.anda = false; },
+    upd(s, dt) {
+      const ant = s.cx; s.cx += (s.al - s.cx) * Math.min(1, dt * 5);
+      s.anda = Math.abs(s.cx - ant) > dt * .02; if (Math.abs(s.al - s.cx) > .02) s.vira = s.al < s.cx;
+      s.sp -= dt; s.pulo = Math.max(0, s.pulo - dt * 3);
+      if (s.sp <= 0 && !fim) { s.sp = 1.1; s.fr.push({ x: .15 + Math.random() * .7, y: .14, ch: COMIDAS[sorteio(COMIDAS.length)], r: 0 }); }
+      const S = this.S(), topo = H * .9 - S * .95;
+      let perto = false;
+      for (const f of s.fr) {
+        f.y += dt * .2; f.r += dt * 3;
+        const dx = Math.abs(f.x - s.cx) * W, fy = f.y * H;
+        if (dx < .7 * S && fy > topo - 25 * U) perto = true;
+        if (!f.p && dx < .6 * S && fy > topo) { f.p = 1; s.pulo = 1; som.nham(); ponto(f.x * W, fy); }
+      }
+      s.fr = s.fr.filter(f => !f.p && f.y < .95);
+      s.b += ((perto ? 1 : 0) - s.b) * Math.min(1, dt * 10);
+    },
+    des(s) {
+      fundo(); chao(H * .9);
+      for (let k = 0; k < 5; k++) circ(W * (k * .25), H * .05, 16 * U, k % 2 ? '#2e7d32' : '#388e3c');
+      for (let k = 0; k < 6; k++) em(COMIDAS[k], W * (.1 + k * .16), H * (.08 + (k % 2) * .04), 6 * U);
+      for (const f of s.fr) em(f.ch, f.x * W, f.y * H, 11 * U, Math.sin(f.r) * .3);
+      dino(s.cx * W, H * .9 - Math.sin(s.pulo * Math.PI) * 4 * U, this.S(), { vira: s.vira, anda: s.anda, boca: s.b, cor: '#42a5f5', barriga: '#e3f2fd', esp: '#ffd600' });
+    },
+    toque(s, x) { s.al = cl(x / W, .12, .88); }, mover(s, x) { s.al = cl(x / W, .12, .88); },
+    dica(s) { const f = s.fr.find(f => f.y < .7); return f ? [f.x * W, H * .82] : null; } },
+
+  /* 13 — Dança do dino: cada toque é um passo de dança diferente */
+  { ic: '🎶', base: 24,
+    ini(s) { s.mv = -1; s.mt = 1; s.cor = sorteio(DCOR.length); },
+    upd(s, dt) { s.mt = Math.min(1, s.mt + dt * 1.6); },
+    des(s) {
+      c.fillStyle = '#2a1b4a'; c.fillRect(0, 0, W, H);
+      for (let k = 0; k < 3; k++) {
+        c.fillStyle = `hsla(${(s.t * 60 + k * 120) % 360},90%,60%,.2)`;
+        c.beginPath(); c.moveTo(W * (.15 + .35 * k), 0); c.lineTo(W * .5 - 32 * U, H * .82); c.lineTo(W * .5 + 32 * U, H * .82); c.fill();
+      }
+      c.fillStyle = '#6d4c41'; c.fillRect(0, H * .8, W, H * .2);
+      for (let k = 0; k < 8; k++) circ(W * (k + .5) / 8, H * .03, 2 * U, `hsl(${(k * 45 + s.t * 120) % 360},90%,65%)`);
+      const S = Math.min(W * .42, H * .25), x = W * .5, y = H * .8, p = s.mt < 1 ? Math.sin(s.mt * Math.PI) : 0;
+      let dx = 0, dy = 0, rot = Math.sin(s.t * 3) * .05, boca = 0, sx = 1;
+      if (s.mt < 1) {
+        if (s.mv === 0) dy = -p * 24 * U;
+        if (s.mv === 1) rot = Math.sin(s.mt * Math.PI * 2) * .3;
+        if (s.mv === 2) boca = p;
+        if (s.mv === 3) { const k = Math.cos(s.mt * Math.PI * 2); sx = Math.sign(k || 1) * Math.max(.06, Math.abs(k)); }
+        if (s.mv === 4) dx = Math.sin(s.mt * Math.PI * 4) * 9 * U;
+      }
+      c.save(); c.translate(x + dx, y + dy); c.rotate(rot); c.scale(sx, 1);
+      dino(0, 0, S, { boca, cor: DCOR[s.cor % DCOR.length], anda: s.mv === 4 && s.mt < 1 });
+      c.restore();
+    },
+    toque(s) { s.mv = (s.mv + 1) % 5; s.mt = 0; s.cor++; if (s.mv === 2) som.rugidinho(); else som.pulo(); nota1(W * .3, H * .5); nota1(W * .7, H * .5); ponto(W * .5, H * .45); },
+    dica: () => [W * .5, H * .62] },
+
+  /* 14 — Bolhas de sabão: o dino sopra, a criança estoura */
+  { ic: '🧼', base: 35,
+    S: () => Math.min(W * .4, H * .24),
+    ini(s) { s.bo = []; s.sp = 0; s.sopro = 0; },
+    upd(s, dt) {
+      s.sp -= dt; s.sopro = Math.max(0, s.sopro - dt * 2);
+      const S = this.S(), mx = W * .28 + .62 * S, my = H * .85 - .8 * S;
+      if (s.sp <= 0 && s.bo.length < 8 && !fim) { s.sp = .6; s.sopro = 1; s.bo.push({ x: mx, y: my, vx: (12 + Math.random() * 25) * U, vy: -(7 + Math.random() * 12) * U, r: (5.5 + Math.random() * 4) * U, f: Math.random() * 6 }); }
+      for (const b of s.bo) {
+        b.x += b.vx * dt; b.y += b.vy * dt + Math.sin(s.t * 3 + b.f) * .3 * U; b.vx *= 1 - dt * .5;
+        if (b.x > W - b.r) b.vx = -Math.abs(b.vx);
+      }
+      s.bo = s.bo.filter(b => b.y > -b.r * 2 && !b.p);
+    },
+    des(s) {
+      fundo(); chao(H * .85); em('🌻', W * .88, H * .82, 12 * U);
+      dino(W * .28, H * .85, this.S(), { boca: .25 + .5 * s.sopro, cor: '#ab47bc', barriga: '#f3e5f5', esp: '#ffeb3b' });
+      for (const b of s.bo) bolhaDes(b.x, b.y, b.r);
+    },
+    toque(s, x, y) {
+      let m = null, md = 1e9;
+      for (const b of s.bo) { const d = Math.hypot(b.x - x, b.y - y); if (d < b.r + 9 * U && d < md) { md = d; m = b; } }
+      if (m) { m.p = 1; som.pop(); respingo(m.x, m.y, 'rgba(200,240,255,.9)', 10); ponto(m.x, m.y); }
+    },
+    dica(s) { const b = s.bo.find(b => b.y < H * .7); return b ? [b.x, b.y] : null; } },
+
+  /* 15 — Boa noite, dino: mamadeira, ursinho, cobertor e apagar a luz */
+  { ic: '🌙', base: 8, passo: 4, calmo: true,
+    S: () => Math.min(W * .42, H * .25),
+    obj: i => [[.16, .9], [.4, .91], [.64, .9], [.86, .3]][i],
+    ini(s) { this.rod(s); },
+    rod(s) { s.et = 0; s.luz = 1; s.dorme = 0; s.bebe = 0; s.esp = 0; s.cor = DCOR[sorteio(DCOR.length)]; },
+    upd(s, dt) {
+      s.bebe = Math.max(0, s.bebe - dt);
+      if (s.et >= 4) {
+        s.luz = Math.max(0, s.luz - dt * 1.5); s.dorme = Math.min(1, s.dorme + dt * .7);
+        if (!fim) { s.esp += dt; if (s.esp > 3.2) this.rod(s); }
+      }
+    },
+    cobertor(x, y, w, h) {
+      c.fillStyle = '#ec407a'; rrp(x, y, w, h, 2.5 * U); c.fill();
+      c.fillStyle = 'rgba(255,255,255,.35)'; for (let k = 1; k < 4; k++) c.fillRect(x + w * k / 4 - w * .04, y, w * .08, h);
+    },
+    des(s) {
+      c.fillStyle = '#5c6bc0'; c.fillRect(0, 0, W, H);
+      rr(W * .1, H * .1, W * .34, H * .17, 2 * U, '#1a237e'); em('🌙', W * .27, H * .185, 10 * U);
+      for (let i = 0; i < 6; i++) circ(W * (.14 + i * .05), H * (.12 + (i % 3) * .04), .5 * U, '#fff');
+      c.fillStyle = '#8d6e63'; c.fillRect(0, H * .8, W, H * .2);
+      rr(W * .08, H * .5, W * .07, H * .3, 2 * U, '#a1887f');
+      rr(W * .1, H * .66, W * .8, H * .13, 3 * U, '#ffcc80');
+      const S = this.S(), dx = W * .52, dy = H * .7;
+      dino(dx, dy, S, { cor: s.cor, dorme: s.dorme, boca: s.bebe > 0 ? .5 : 0 });
+      if (s.bebe > 0) em('🍼', dx + .72 * S, dy - .78 * S, 9 * U, -.9);
+      if (s.et >= 2) em('🧸', dx - .62 * S, dy - .3 * S, 12 * U);
+      if (s.et >= 3) this.cobertor(dx - .62 * S, dy - .45 * S + s.dorme * .18 * S, 1.15 * S, .45 * S);
+      const ch = ['🍼', '🧸', null, '💡'];
+      for (let i = 0; i < 4; i++) {
+        if (i < s.et && i !== 3) continue;
+        const [ox, oy] = this.obj(i), vez = i === s.et, k = vez ? 1 + .12 * Math.sin(s.t * 6) : .85, a = i === 3 && s.et >= 4 ? .35 : vez ? 1 : .55;
+        if (i === 2) { c.globalAlpha = a; this.cobertor(ox * W - 7 * U * k, oy * H - 5 * U * k, 14 * U * k, 10 * U * k); c.globalAlpha = 1; }
+        else em(ch[i], ox * W, oy * H, 13 * U * k, 0, a);
+      }
+      if (s.luz < 1) { c.fillStyle = `rgba(5,8,40,${.6 * (1 - s.luz)})`; c.fillRect(0, 0, W, H); }
+      if (s.dorme > .3) em('💤', dx + .5 * S, dy - 1.05 * S - Math.sin(s.t * 2) * 2 * U, 10 * U, 0, s.dorme);
+    },
+    toque(s, x, y) {
+      if (s.et >= 4) return;
+      const [ox, oy] = this.obj(s.et);
+      if (Math.hypot(ox * W - x, oy * H - y) > 24 * U) return;
+      if (s.et === 0) { s.bebe = 1.4; som.nham(); } else if (s.et === 3) som.ninar(); else som.pop();
+      s.et++; ponto(ox * W, oy * H);
+    },
+    dica(s) { if (s.et >= 4) return null; const [ox, oy] = this.obj(s.et); return [ox * W, oy * H]; } },
+
+  /* 16 — Festa dos dinos: soltar fogos tocando no céu */
+  { ic: '🎆', base: 40,
     ini() {}, upd() {},
     des(s) {
       fundo(true);

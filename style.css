@@ -116,3 +116,30 @@ button { font: inherit; border: 0; cursor: pointer; padding: 0; color: inherit; 
 @keyframes balanca { 0%,100% { transform: rotate(-6deg); } 50% { transform: rotate(6deg) scale(1.05); } }
 @keyframes surgir { from { opacity: 0; transform: scale(.8); } }
 @keyframes pula { to { transform: translateY(-2.5cqw) rotate(-6deg); } }
+
+/* v0.4: mundos, carros e dinos para escolher */
+.tela.on { animation: entra .3s ease-out; }
+@keyframes entra { from { opacity: 0; transform: scale(.97); } }
+.fundoCv { position: absolute !important; inset: 0; width: 100%; height: 100%; z-index: 0 !important; pointer-events: none; }
+.linha.quatro { gap: 3cqw; }
+.linha.quatro .bola { width: 18cqw; height: 18cqw; font-size: 9.5cqw; }
+.linha.quatro .item span { font-size: 3.6cqw; }
+.coluna { display: flex; flex-direction: column; gap: 4cqw; width: 88cqw; padding-bottom: 8cqw; }
+.mundoCard { display: flex; align-items: center; gap: 5cqw; padding: 3cqw 6cqw; border-radius: 7cqw; border: .9cqw solid #fff;
+  color: #fff; text-align: left; box-shadow: 0 1.4cqw 0 rgba(0,0,0,.22); font-size: 16cqw; line-height: 1; }
+.mundoCard div { display: flex; flex-direction: column; gap: 1.5cqw; }
+.mundoCard b { font-size: 7.5cqw; text-shadow: 0 .5cqw 0 rgba(0,0,0,.3); }
+.mundoCard small { font-size: 4.6cqw; }
+.mundoCard.trancada { filter: grayscale(.8); opacity: .6; }
+.mundoCard:active { transform: translateY(1cqw) scale(.98); box-shadow: none; }
+.previa { width: 76cqw; height: 42cqw; flex: none; }
+.escolhas { gap: 2.4cqw; flex-wrap: wrap; }
+.escolha { width: 16cqw; height: 16cqw; border-radius: 4cqw; background: linear-gradient(#fff, #e3eef7); border: .7cqw solid #fff;
+  box-shadow: 0 1cqw 0 rgba(0,0,0,.2); padding: 0; flex: none; }
+.escolha canvas { width: 100%; height: 100%; display: block; }
+.escolha.sel { outline: 1.2cqw solid var(--amarelo); }
+.escolha:active { transform: translateY(1cqw); box-shadow: none; }
+#dcores .cor { display: grid; place-items: center; font-size: 6cqw; }
+.grade.quatro { grid-template-columns: repeat(4, 1fr); gap: 3cqw; }
+.grade.quatro .fase.fig { font-size: 11cqw; border-width: .9cqw; }
+.secao { grid-column: 1 / -1; font-size: 6cqw; font-weight: 900; color: #fff; text-shadow: 0 .5cqw 0 rgba(0,0,0,.35); margin-top: 3cqw; }

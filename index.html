@@ -33,8 +33,7 @@
 
 <!-- Menu principal -->
 <div id="menu" class="tela ceu">
-  <div class="nuvem n1">☁️</div><div class="nuvem n2">☁️</div>
-  <div class="passeio">🦕</div><div class="passeio p2">🦖</div>
+  <canvas id="cvMenu" class="fundoCv"></canvas>
   <div class="topo">
     <button id="bQuem" class="avatar" data-ir="quem"></button>
     <div id="placar" class="placar">⭐ 0</div>
@@ -44,36 +43,54 @@
     <div class="gmlogo"></div>
     <button id="bJogar" class="bolao pulsa">🚗</button>
     <div class="rotulo">JOGAR</div>
-    <div class="linha">
-      <div class="item"><button class="bola" data-ir="mapa">🗺️</button><span>FASES</span></div>
-      <div class="item"><button class="bola" data-ir="garagem">🔧</button><span>GARAGEM</span></div>
+    <div class="linha quatro">
+      <div class="item"><button class="bola" data-ir="mapa">🗺️</button><span>MUNDOS</span></div>
+      <div class="item"><button class="bola" data-ir="garagem">🚙</button><span>CARROS</span></div>
+      <div class="item"><button class="bola" data-ir="dinos">🦖</button><span>DINOS</span></div>
       <div class="item"><button class="bola" data-ir="album">📒</button><span>ÁLBUM</span></div>
     </div>
   </div>
   <div class="rodape"><img src="logo.webp" alt="EG Gamer X"><span>um jogo<br><b>EG GAMER X</b></span></div>
 </div>
 
-<!-- Mapa das fases -->
+<!-- Mundos -->
 <div id="mapa" class="tela ceu rola">
   <button class="voltar" data-ir="menu">🏠</button>
-  <h1 class="titulo">Fases</h1>
+  <h1 class="titulo">Mundos</h1>
+  <div id="mundos" class="coluna"></div>
+</div>
+
+<!-- Fases de um mundo -->
+<div id="mundo" class="tela rola">
+  <button class="voltar" data-ir="mapa">🗺️</button>
+  <h1 id="tituloMundo" class="titulo"></h1>
   <div id="fases" class="grade"></div>
 </div>
 
-<!-- Garagem -->
-<div id="garagem" class="tela ceu">
+<!-- Carros -->
+<div id="garagem" class="tela ceu rola">
   <button class="voltar" data-ir="menu">🏠</button>
-  <h1 class="titulo">Garagem</h1>
-  <canvas id="previa" width="600" height="340"></canvas>
+  <h1 class="titulo">Carros</h1>
+  <canvas id="previa" class="previa"></canvas>
+  <div id="modelos" class="linha escolhas"></div>
   <div id="cores" class="linha quebra"></div>
   <div id="roupas" class="linha"></div>
+</div>
+
+<!-- Dinos -->
+<div id="dinos" class="tela ceu rola">
+  <button class="voltar" data-ir="menu">🏠</button>
+  <h1 class="titulo">Dinos</h1>
+  <canvas id="previaDino" class="previa"></canvas>
+  <div id="tipos" class="linha escolhas"></div>
+  <div id="dcores" class="linha quebra"></div>
 </div>
 
 <!-- Álbum de figurinhas -->
 <div id="album" class="tela ceu rola">
   <button class="voltar" data-ir="menu">🏠</button>
   <h1 class="titulo">Álbum</h1>
-  <div id="figs" class="grade"></div>
+  <div id="figs" class="grade quatro"></div>
 </div>
 
 <!-- Área dos pais -->
@@ -93,7 +110,7 @@
     <button id="bTrocar" class="bt">Trocar de jogador</button>
     <button id="bZerar" class="bt perigo">Zerar o progresso deste jogador</button>
     <img class="marca" src="logo.webp" alt="EG Gamer X">
-    <p class="creditos">GM – Gabriel e Matheus na Terra dos Dinos · v0.3<br>Feito com carinho por <b>EG Gamer X</b><br>Sem anúncios · Sem internet</p>
+    <p class="creditos">GM – Gabriel e Matheus na Terra dos Dinos · v0.4<br>Feito com carinho por <b>EG Gamer X</b><br>Sem anúncios · Sem internet</p>
   </div>
 </div>
 

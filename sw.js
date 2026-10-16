@@ -1,6 +1,6 @@
 /* GM – Terra dos Dinos — guarda o jogo no aparelho para funcionar sem internet.
    Mude o nome do cache a cada versão para os aparelhos baixarem os arquivos novos. */
-const CACHE = 'gm-dinos-v0.3.0';
+const CACHE = 'gm-dinos-v0.4.0';
 const ARQUIVOS = ['./', 'index.html', 'style.css', 'jogo.js', 'logo.webp', 'manifest.webmanifest',
   'icons/icon-192.png', 'icons/icon-512.png'];
 
